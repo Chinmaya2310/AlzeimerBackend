@@ -15,7 +15,7 @@ npm start                 # http://localhost:3001
 |---|---|---|
 | POST | `/signup`, `/signin` | Create account / log in, returns a JWT |
 | GET, POST | `/tracks` | List / save the user's recorded tracks |
-| GET, PUT | `/operationUser` | Read / update the logged-in user's profile (name, phone, city, safe distance) |
+| GET, PUT | `/operationUser` | Read / update the logged-in user's profile (name, phone, city, safe zone: `homeLocation` and radius `dist` in km, validated to 0.1–10 km) |
 | POST | `/sendMessage` | Send the "outside safe area" SMS with a Google Maps link to the user's phone and record the alert |
 | GET | `/alerts` | The user's 50 most recent alerts (time, location, distance, whether the SMS was sent) |
 

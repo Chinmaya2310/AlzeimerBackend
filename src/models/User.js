@@ -16,7 +16,12 @@ const userSchema = new mongoose.Schema({
     },
     dist: {
         type: Number,
-        default: 0.5, // safe distance in km
+        default: 0.5, // safe-zone radius in km
+    },
+    // centre of the safe zone; alerts are measured from here
+    homeLocation: {
+        latitude: Number,
+        longitude: Number,
     },
     name: {
         type: String,

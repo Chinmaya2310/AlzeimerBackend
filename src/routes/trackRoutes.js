@@ -53,7 +53,7 @@ router.post("/sendMessage", async (req, res) => {
                 "Content-Type": "application/x-www-form-urlencoded",
             },
             body: new URLSearchParams({
-                message: `ALERT: Patient is outside the safe area${typeof dist === "number" ? `, ${dist.toFixed(2)} km from start` : ""}. Live location: ${link}`,
+                message: `ALERT: Patient is outside the safe area${typeof dist === "number" ? `, ${dist.toFixed(2)} km from home` : ""}. Live location: ${link}`,
                 language: "english",
                 route: "q",
                 numbers: String(req.user.phone),
