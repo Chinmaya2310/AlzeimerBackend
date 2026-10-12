@@ -10,6 +10,8 @@ npm install
 npm start                 # http://localhost:3001
 ```
 
+The Telegram bot long-polls when running locally. When hosted, set `TELEGRAM_WEBHOOK_URL` (the public base URL) and Telegram pushes updates to the server instead.
+
 ## API
 | Method | Path | Purpose |
 |---|---|---|
@@ -19,7 +21,7 @@ npm start                 # http://localhost:3001
 | POST | `/tracking/start` | Start of a walk: reset the alert state |
 | POST | `/locations` | Each GPS point while tracking; the server measures the distance from home and alerts after two readings outside the zone, re-arming once back within 90% of the radius (`src/services/geofence.js`) |
 | POST | `/sendMessage` | Send the "outside safe area" alert (Telegram message + map pin, or SMS with a Google Maps link) and record it |
-| POST | `/telegram/link`, `/telegram/verify` | Connect Telegram: get a one-time `t.me/<bot>?start=<code>` link, then confirm after the caregiver taps Start and shares a phone number matching the registered one |
+| POST | `/telegram/link`, `/telegram/verify` | Connect Telegram: get a one-time `t.me/<bot>?start=<code>` link, then check progress. The bot itself (`src/services/telegramBot.js`) replies to Start and accepts the caregiver's shared phone number only if it is their own and matches the registered one |
 | PUT | `/alert-channel` | Choose `sms` or `telegram` |
 | DELETE | `/telegram` | Disconnect Telegram (back to SMS) |
 | POST | `/alerts/test` | Send a test alert on the chosen channel |

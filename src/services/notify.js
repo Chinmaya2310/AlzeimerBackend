@@ -6,10 +6,13 @@ const TELEGRAM_API = () => `https://api.telegram.org/bot${process.env.TELEGRAM_B
 const telegramEnabled = () => /^\d+:[\w-]{20,}$/.test(process.env.TELEGRAM_BOT_TOKEN || "");
 
 const telegram = async (method, params) => {
+    // never wait forever: a hung request would stall the bot's polling loop
+    const waitSeconds = (params.timeout || 0) + 15;
     const response = await fetch(`${TELEGRAM_API()}/${method}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(params),
+        signal: AbortSignal.timeout(waitSeconds * 1000),
     });
     const result = await response.json();
     if (!result.ok) {

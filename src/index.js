@@ -25,6 +25,8 @@ mongoose.connection.on("error", () => {
 });
 
 app.use(bodyParser.json());
+// Telegram bot replies (webhook route must come before the login-protected routes)
+require("./services/telegramBot").startBot(app);
 app.use(authRoutes);
 app.use(trackRoutes);
 app.use(detailRoutes);
