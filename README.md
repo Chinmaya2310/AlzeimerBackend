@@ -12,6 +12,14 @@ npm start                 # http://localhost:3001
 
 The Telegram bot long-polls when running locally. When hosted, set `TELEGRAM_WEBHOOK_URL` (the public base URL) and Telegram pushes updates to the server instead.
 
+## Deploy (Render + MongoDB Atlas, free)
+1. MongoDB Atlas: create a free M0 cluster, a database user, allow access from anywhere (0.0.0.0/0), and copy the connection string (add a database name, e.g. `/safewalk`).
+2. Render: New → Web Service → this repo. Build command `npm install`, start command `npm start`.
+3. Environment variables: `MONGO_URI`, `JWT_SECRET` (long random string), `FAST2SMS_API_KEY`, `TELEGRAM_BOT_TOKEN`, and `TELEGRAM_WEBHOOK_URL` = the service's URL (e.g. `https://safewalk-backend.onrender.com`).
+4. Check `https://<service>/health` returns `{"ok":true}`.
+
+While the hosted server holds the Telegram webhook, a local copy of the backend leaves the bot alone.
+
 ## API
 | Method | Path | Purpose |
 |---|---|---|

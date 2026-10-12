@@ -88,7 +88,6 @@ const safeHandle = update =>
 // Local mode: long-poll Telegram for new messages
 const startPolling = async () => {
     let offset = 0;
-    await telegram("deleteWebhook", {}).catch(() => {});
     console.log("Telegram bot listening (long polling)");
     for (;;) {
         try {
@@ -121,6 +120,12 @@ const startBot = async app => {
         await telegram("setWebhook", { url: `${process.env.TELEGRAM_WEBHOOK_URL}${path}`, allowed_updates: ["message"] });
         console.log("Telegram bot listening (webhook)");
     } else {
+        // if a hosted server has the webhook, leave the bot to it instead of competing
+        const info = await telegram("getWebhookInfo", {}).catch(() => ({}));
+        if (info.url) {
+            console.log("Telegram bot is handled by the hosted server; not polling here");
+            return;
+        }
         startPolling();
     }
 };
