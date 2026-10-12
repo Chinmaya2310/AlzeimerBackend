@@ -34,7 +34,12 @@ router.post("/telegram/link", async (req, res) => {
 // The app calls this to see how far the caregiver has got.
 router.post("/telegram/verify", async (req, res) => {
     const user = await User.findById(req.user._id);
-    if (user.telegramChatId && user.telegramPhone && !user.telegramLinkCode) {
+    if (user.telegramChatId && user.telegramPhone && !user.telegramPendingChatId) {
+        // already confirmed: an unfinished new attempt doesn't undo a working connection
+        if (user.telegramLinkCode) {
+            user.telegramLinkCode = undefined;
+            await user.save();
+        }
         return res.send({ step: "connected", user });
     }
     if (user.telegramPendingChatId) {
