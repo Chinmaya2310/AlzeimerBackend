@@ -8,8 +8,7 @@ const app = express();
 const authRoutes = require("./routes/authRoutes");
 const trackRoutes = require("./routes/trackRoutes");
 const detailRoutes = require("./routes/detailRoutes");
-const mongoURI =
-    "mongodb+srv://abhinav:abhinav@locationtracker.smw1h.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+const mongoURI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/alzheimer";
 
 mongoose.connect(mongoURI, {
     useNewUrlParser: true,

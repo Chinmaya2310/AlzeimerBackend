@@ -64,4 +64,11 @@ userSchema.methods.comparePassword = function (candidatePassword) {
     });
 };
 
+userSchema.set("toJSON", {
+    transform: (doc, ret) => {
+        delete ret.password;
+        return ret;
+    },
+});
+
 mongoose.model("User", userSchema);

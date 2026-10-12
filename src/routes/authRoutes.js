@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const User = mongoose.model("User");
-//const fast2sms=require('fast-two-sms');
 
 router.post("/signup", async (req, res) => {
     // console.log(req.body);
@@ -11,7 +10,7 @@ router.post("/signup", async (req, res) => {
     try {
         const user = new User({ email, password, phone });
         await user.save();
-        const token = jwt.sign({ userId: user._id }, "MY_SECRET_KEY");
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
         res.send({ token });
     } catch (err) {
         res.status(424).send(err.message);
@@ -30,21 +29,12 @@ router.post("/signin", async (req, res) => {
     }
     try {
         await user.comparePassword(password);
-        const token = jwt.sign({ userId: user._id }, "MY_SECRET_KEY");
+        const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
         res.send({ token, user });
     } catch (err) {
         return res.status(422).send({ error: "Invalid password" });
     }
 });
 
-/*router.post("/sendMessage",async (req,res)=>{
-    const { email, password, phone } = req.body;
-    API_KEY="kYC8XGxNcTKrBMwDIUm5Fq23buhvS41jyWlgsd67QfRJPzZeEAbjWY9mOcy5zKe4N6UhsVXnwFl7tgpS";
-    mg="ghjgjgjjgjgjggjgjg";
-    const response = await fast2sms.sendMessage({authorization : API_KEY,
-                        message:msg,
-                        numbers:[phone]});
-    res.send(response);
-});*/
 
 module.exports = router;

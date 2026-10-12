@@ -4,7 +4,7 @@ const requireAuth = require("../middlewares/requireAuth");
 const Track = mongoose.model("Track");
 const User = mongoose.model("User");
 const router = express.Router();
-const unirest= require("unirest");
+
 router.use(requireAuth);
 
 router.get("/getdetails", async (req, res) => {
@@ -34,34 +34,40 @@ router.post("/tracks", async (req, res) => {
     }
 });
 
-router.post('/sendMessage', async (req,res)=>{
-    
-    //console.log("latitude"+req.body.currentLocation.currentLocation.coords.latitude);
-    //console.log("longitude"+req.body.currentLocation.currentLocation.coords.longitude);
-
-    const API="pJ1UjN0nVPm4Tl7tWHC3xoXgqf96zSiQ8cMDdsIyReZEwvBKaLpyo9OcuFq0NWSmCQnx526ZGAs8rThb";
-    //const lat="latitude ka variable dal";
-    //const lan="yahan longitude ka "
-    const link="http://www.google.com/maps/place/"+req.body.currentLocation.currentLocation.coords.latitude+","+req.body.currentLocation.currentLocation.coords.longitude;
-    const re = unirest("POST", "https://www.fast2sms.com/dev/bulkV2");
-
-    re.headers({
-    "authorization": API
-    });
-
-    re.form({
-    "message": "The patient is outside safe area. You can track the patient's location using following link "+link,
-    "language": "english",
-    "route": "q",
-    "numbers": req.user.phone,
-});
-
-re.end(function (res) {
-  if (res.error) throw new Error(res.error);
-
-  console.log(res.body);
-});
-
+router.post("/sendMessage", async (req, res) => {
+    const { currentLocation, dist } = req.body;
+    const coords = currentLocation?.coords || currentLocation?.currentLocation?.coords;
+    if (!coords) {
+        return res.status(422).send({ error: "You must provide the current location" });
+    }
+    if (!req.user.phone) {
+        return res.status(422).send({ error: "No phone number saved for this user" });
+    }
+    const link = `https://www.google.com/maps/place/${coords.latitude},${coords.longitude}`;
+    try {
+        const response = await fetch("https://www.fast2sms.com/dev/bulkV2", {
+            method: "POST",
+            headers: {
+                authorization: process.env.FAST2SMS_API_KEY,
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+                message: `ALERT: Patient is outside the safe area${typeof dist === "number" ? `, ${dist.toFixed(2)} km from start` : ""}. Live location: ${link}`,
+                language: "english",
+                route: "q",
+                numbers: String(req.user.phone),
+            }),
+        });
+        const result = await response.json();
+        console.log("Fast2SMS", response.status, JSON.stringify(result));
+        if (!response.ok || !result.return) {
+            return res.status(502).send({ error: "SMS failed", provider: result });
+        }
+        res.send(result);
+    } catch (err) {
+        console.log("Fast2SMS request error", err.message);
+        res.status(502).send({ error: "SMS failed", message: err.message });
+    }
 });
 
 module.exports = router;

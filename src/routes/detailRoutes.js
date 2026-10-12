@@ -10,23 +10,16 @@ router.get("/operationUser", async (req, res) => {
 });
 
 router.put("/operationUser", async (req, res) => {
-    const { _id, phone, name, city, dist } = req.body.userData;
-    User.findById(_id, function (err, p) {
-        if (!p) return next(new Error("Could not load Document"));
-        else {
-            // do your updates here
-            p.phone = phone;
-            p.city = city;
-            p.dist = dist;
-            p.name = name;
-
-            p.save(function (err) {
-                if (err) console.log("error");
-                else console.log("success");
-            });
-        }
-
-        res.send(req.body.userData);
-    });
+    const { phone, name, city, dist } = req.body.userData || {};
+    try {
+        const user = await User.findByIdAndUpdate(
+            req.user._id,
+            { phone, name, city, dist },
+            { new: true, runValidators: true, omitUndefined: true }
+        );
+        res.send(user);
+    } catch (err) {
+        res.status(422).send({ error: err.message });
+    }
 });
 module.exports = router;
