@@ -27,6 +27,13 @@ const userSchema = new mongoose.Schema({
     telegramChatId: String,
     telegramName: String,
     telegramLinkCode: String, // one-time code used while connecting Telegram
+    telegramPendingChatId: String, // chat that pressed Start but hasn't shared its number yet
+    telegramPhone: String, // phone number Telegram confirmed for the connected chat
+    // alert state for the walk in progress (see services/geofence.js)
+    zoneState: {
+        outsideCount: { type: Number, default: 0 },
+        alerted: { type: Boolean, default: false },
+    },
     // centre of the safe zone; alerts are measured from here
     homeLocation: {
         latitude: Number,
@@ -82,6 +89,7 @@ userSchema.set("toJSON", {
     transform: (doc, ret) => {
         delete ret.password;
         delete ret.telegramLinkCode;
+        delete ret.telegramPendingChatId;
         return ret;
     },
 });

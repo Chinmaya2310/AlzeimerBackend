@@ -5,6 +5,7 @@ const Track = mongoose.model("Track");
 const User = mongoose.model("User");
 const Alert = mongoose.model("Alert");
 const { notify } = require("../services/notify");
+const { checkLocation } = require("../services/geofence");
 const router = express.Router();
 
 router.use(requireAuth);
@@ -36,6 +37,31 @@ router.post("/tracks", async (req, res) => {
     }
 });
 
+// Start of a walk: forget the previous walk's alert state
+router.post("/tracking/start", async (req, res) => {
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        { zoneState: { outsideCount: 0, alerted: false } },
+        { new: true }
+    );
+    res.send(user);
+});
+
+// Each GPS point while tracking; the server decides whether to alert
+router.post("/locations", async (req, res) => {
+    const coords = req.body.coords;
+    if (!coords || typeof coords.latitude !== "number" || typeof coords.longitude !== "number") {
+        return res.status(422).send({ error: "You must provide coords.latitude and coords.longitude" });
+    }
+    try {
+        const user = await User.findById(req.user._id);
+        res.send(await checkLocation(user, coords));
+    } catch (err) {
+        res.status(500).send({ error: err.message });
+    }
+});
+
+// Older app versions decide on the phone and call this directly
 router.post("/sendMessage", async (req, res) => {
     const { currentLocation, dist } = req.body;
     const coords = currentLocation?.coords || currentLocation?.currentLocation?.coords;

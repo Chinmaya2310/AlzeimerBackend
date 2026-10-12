@@ -16,8 +16,10 @@ npm start                 # http://localhost:3001
 | POST | `/signup`, `/signin` | Create account / log in, returns a JWT |
 | GET, POST | `/tracks` | List / save the user's recorded tracks |
 | GET, PUT | `/operationUser` | Read / update the logged-in user's profile (name, phone, city, safe zone: `homeLocation` and radius `dist` in km, validated to 0.1–10 km) |
+| POST | `/tracking/start` | Start of a walk: reset the alert state |
+| POST | `/locations` | Each GPS point while tracking; the server measures the distance from home and alerts after two readings outside the zone, re-arming once back within 90% of the radius (`src/services/geofence.js`) |
 | POST | `/sendMessage` | Send the "outside safe area" alert (Telegram message + map pin, or SMS with a Google Maps link) and record it |
-| POST | `/telegram/link`, `/telegram/verify` | Connect Telegram: get a one-time `t.me/<bot>?start=<code>` link, then confirm after the caregiver taps Start |
+| POST | `/telegram/link`, `/telegram/verify` | Connect Telegram: get a one-time `t.me/<bot>?start=<code>` link, then confirm after the caregiver taps Start and shares a phone number matching the registered one |
 | PUT | `/alert-channel` | Choose `sms` or `telegram` |
 | DELETE | `/telegram` | Disconnect Telegram (back to SMS) |
 | POST | `/alerts/test` | Send a test alert on the chosen channel |

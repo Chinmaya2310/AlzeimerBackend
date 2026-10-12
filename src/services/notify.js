@@ -49,6 +49,9 @@ const notify = async (user, text, coords) => {
         if (!user.telegramChatId) {
             throw new Error("Telegram is not connected for this account");
         }
+        if (!user.telegramPhone) {
+            throw new Error("Reconnect Telegram to confirm it belongs to the registered phone number");
+        }
         await sendTelegram(user.telegramChatId, text, coords);
         return "telegram";
     }
