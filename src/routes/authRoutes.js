@@ -5,8 +5,17 @@ const router = express.Router();
 const User = mongoose.model("User");
 
 router.post("/signup", async (req, res) => {
-    // console.log(req.body);
-    const { email, password, phone } = req.body;
+    const { password, phone } = req.body;
+    const email = String(req.body.email || "").trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(422).send({ error: "Enter a valid email address" });
+    }
+    if (!/^\d{10}$/.test(String(phone || ""))) {
+        return res.status(422).send({ error: "Enter a 10-digit phone number" });
+    }
+    if (!password || password.length < 6) {
+        return res.status(422).send({ error: "Password must be at least 6 characters" });
+    }
     try {
         const user = new User({ email, password, phone });
         await user.save();
@@ -19,7 +28,8 @@ router.post("/signup", async (req, res) => {
 });
 
 router.post("/signin", async (req, res) => {
-    const { email, password } = req.body;
+    const { password } = req.body;
+    const email = String(req.body.email || "").trim().toLowerCase();
     if (!email || !password) {
         return res.status(401).send("Must provide email and password");
     }
