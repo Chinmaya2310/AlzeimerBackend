@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const requireAuth = require("../middlewares/requireAuth");
 const Track = mongoose.model("Track");
 const User = mongoose.model("User");
+const Alert = mongoose.model("Alert");
 const router = express.Router();
 
 router.use(requireAuth);
@@ -60,14 +61,31 @@ router.post("/sendMessage", async (req, res) => {
         });
         const result = await response.json();
         console.log("Fast2SMS", response.status, JSON.stringify(result));
-        if (!response.ok || !result.return) {
-            return res.status(502).send({ error: "SMS failed", provider: result });
+        const smsSent = response.ok && !!result.return;
+        const alert = await saveAlert(req.user._id, coords, dist, smsSent);
+        if (!smsSent) {
+            return res.status(502).send({ error: "SMS failed", provider: result, alert });
         }
-        res.send(result);
+        res.send({ ...result, alert });
     } catch (err) {
         console.log("Fast2SMS request error", err.message);
-        res.status(502).send({ error: "SMS failed", message: err.message });
+        const alert = await saveAlert(req.user._id, coords, dist, false);
+        res.status(502).send({ error: "SMS failed", message: err.message, alert });
     }
+});
+
+const saveAlert = (userId, coords, dist, smsSent) =>
+    new Alert({
+        userId,
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        distanceKm: typeof dist === "number" ? dist : undefined,
+        smsSent,
+    }).save();
+
+router.get("/alerts", async (req, res) => {
+    const alerts = await Alert.find({ userId: req.user._id }).sort({ createdAt: -1 }).limit(50);
+    res.send(alerts);
 });
 
 module.exports = router;

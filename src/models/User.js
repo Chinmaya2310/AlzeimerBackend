@@ -16,7 +16,7 @@ const userSchema = new mongoose.Schema({
     },
     dist: {
         type: Number,
-        required: false,
+        default: 0.5, // safe distance in km
     },
     name: {
         type: String,

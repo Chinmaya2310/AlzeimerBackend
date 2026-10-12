@@ -1,5 +1,6 @@
 require("./models/User");
 require("./models/Track");
+require("./models/Alert");
 const express = require("express");
 const mongoose = require("mongoose");
 const requireAuth = require("./middlewares/requireAuth");

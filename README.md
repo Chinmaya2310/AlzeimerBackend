@@ -16,9 +16,11 @@ npm start                 # http://localhost:3001
 | POST | `/signup`, `/signin` | Create account / log in, returns a JWT |
 | GET, POST | `/tracks` | List / save the user's recorded tracks |
 | GET, PUT | `/operationUser` | Read / update the logged-in user's profile (name, phone, city, safe distance) |
-| POST | `/sendMessage` | Send the "outside safe area" SMS with a Google Maps link to the user's phone |
+| POST | `/sendMessage` | Send the "outside safe area" SMS with a Google Maps link to the user's phone and record the alert |
+| GET | `/alerts` | The user's 50 most recent alerts (time, location, distance, whether the SMS was sent) |
 
 ## 2026 fixes
+- New users get a default safe distance of 0.5 km; every alert is stored for the app's alert history
 - Secrets (database URL, JWT key, SMS key) moved out of the code into `.env`
 - Password hashes no longer returned by `/signin` and `/operationUser`
 - `PUT /operationUser` only updates the logged-in user (previously any user ID in the request body)
