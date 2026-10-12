@@ -9,6 +9,7 @@ const app = express();
 const authRoutes = require("./routes/authRoutes");
 const trackRoutes = require("./routes/trackRoutes");
 const detailRoutes = require("./routes/detailRoutes");
+const alertRoutes = require("./routes/alertRoutes");
 const mongoURI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/alzheimer";
 
 mongoose.connect(mongoURI, {
@@ -27,6 +28,7 @@ app.use(bodyParser.json());
 app.use(authRoutes);
 app.use(trackRoutes);
 app.use(detailRoutes);
+app.use(alertRoutes);
 
 app.get("/", requireAuth, (req, res) => {
     res.send(`Your email is ${req.user.email}`);

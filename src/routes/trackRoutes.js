@@ -4,6 +4,7 @@ const requireAuth = require("../middlewares/requireAuth");
 const Track = mongoose.model("Track");
 const User = mongoose.model("User");
 const Alert = mongoose.model("Alert");
+const { notify } = require("../services/notify");
 const router = express.Router();
 
 router.use(requireAuth);
@@ -41,46 +42,29 @@ router.post("/sendMessage", async (req, res) => {
     if (!coords) {
         return res.status(422).send({ error: "You must provide the current location" });
     }
-    if (!req.user.phone) {
-        return res.status(422).send({ error: "No phone number saved for this user" });
-    }
     const link = `https://www.google.com/maps/place/${coords.latitude},${coords.longitude}`;
+    const away = typeof dist === "number" ? `, ${dist.toFixed(2)} km from home` : "";
+    const text = `ALERT: Patient is outside the safe area${away}. Live location: ${link}`;
+    const channel = req.user.alertChannel || "sms";
     try {
-        const response = await fetch("https://www.fast2sms.com/dev/bulkV2", {
-            method: "POST",
-            headers: {
-                authorization: process.env.FAST2SMS_API_KEY,
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: new URLSearchParams({
-                message: `ALERT: Patient is outside the safe area${typeof dist === "number" ? `, ${dist.toFixed(2)} km from home` : ""}. Live location: ${link}`,
-                language: "english",
-                route: "q",
-                numbers: String(req.user.phone),
-            }),
-        });
-        const result = await response.json();
-        console.log("Fast2SMS", response.status, JSON.stringify(result));
-        const smsSent = response.ok && !!result.return;
-        const alert = await saveAlert(req.user._id, coords, dist, smsSent);
-        if (!smsSent) {
-            return res.status(502).send({ error: "SMS failed", provider: result, alert });
-        }
-        res.send({ ...result, alert });
+        await notify(req.user, text, coords);
+        const alert = await saveAlert(req.user._id, coords, dist, channel, true);
+        res.send({ alert });
     } catch (err) {
-        console.log("Fast2SMS request error", err.message);
-        const alert = await saveAlert(req.user._id, coords, dist, false);
-        res.status(502).send({ error: "SMS failed", message: err.message, alert });
+        console.log("Alert failed:", err.message);
+        const alert = await saveAlert(req.user._id, coords, dist, channel, false);
+        res.status(502).send({ error: "Alert failed", message: err.message, alert });
     }
 });
 
-const saveAlert = (userId, coords, dist, smsSent) =>
+const saveAlert = (userId, coords, dist, channel, sent) =>
     new Alert({
         userId,
         latitude: coords.latitude,
         longitude: coords.longitude,
         distanceKm: typeof dist === "number" ? dist : undefined,
-        smsSent,
+        channel,
+        sent,
     }).save();
 
 router.get("/alerts", async (req, res) => {

@@ -1,11 +1,11 @@
 # Alzheimer's Patient Tracker (backend)
 
-Node.js / Express / MongoDB API for the [AlzeimerPatientTracker](https://github.com/Chinmaya2310/AlzeimerPatientTracker) app: auth, saved GPS tracks, caregiver profile, and SMS alerts via Fast2SMS.
+Node.js / Express / MongoDB API for the [AlzeimerPatientTracker](https://github.com/Chinmaya2310/AlzeimerPatientTracker) app: auth, saved GPS tracks, caregiver profile and safe zone, and alerts by Telegram (free) or SMS via Fast2SMS (paid).
 
 ## Setup
 ```bash
 docker run -d --name alz-mongo -p 27017:27017 mongo:4.4
-cp .env.example .env      # set JWT_SECRET and FAST2SMS_API_KEY
+cp .env.example .env      # set JWT_SECRET, FAST2SMS_API_KEY and (optional) TELEGRAM_BOT_TOKEN from @BotFather
 npm install
 npm start                 # http://localhost:3001
 ```
@@ -16,7 +16,11 @@ npm start                 # http://localhost:3001
 | POST | `/signup`, `/signin` | Create account / log in, returns a JWT |
 | GET, POST | `/tracks` | List / save the user's recorded tracks |
 | GET, PUT | `/operationUser` | Read / update the logged-in user's profile (name, phone, city, safe zone: `homeLocation` and radius `dist` in km, validated to 0.1–10 km) |
-| POST | `/sendMessage` | Send the "outside safe area" SMS with a Google Maps link to the user's phone and record the alert |
+| POST | `/sendMessage` | Send the "outside safe area" alert (Telegram message + map pin, or SMS with a Google Maps link) and record it |
+| POST | `/telegram/link`, `/telegram/verify` | Connect Telegram: get a one-time `t.me/<bot>?start=<code>` link, then confirm after the caregiver taps Start |
+| PUT | `/alert-channel` | Choose `sms` or `telegram` |
+| DELETE | `/telegram` | Disconnect Telegram (back to SMS) |
+| POST | `/alerts/test` | Send a test alert on the chosen channel |
 | GET | `/alerts` | The user's 50 most recent alerts (time, location, distance, whether the SMS was sent) |
 
 ## 2026 fixes

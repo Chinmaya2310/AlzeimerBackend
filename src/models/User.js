@@ -18,6 +18,15 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: 0.5, // safe-zone radius in km
     },
+    // how alerts reach the caregiver: "sms" (Fast2SMS, paid) or "telegram" (free)
+    alertChannel: {
+        type: String,
+        enum: ["sms", "telegram"],
+        default: "sms",
+    },
+    telegramChatId: String,
+    telegramName: String,
+    telegramLinkCode: String, // one-time code used while connecting Telegram
     // centre of the safe zone; alerts are measured from here
     homeLocation: {
         latitude: Number,
@@ -72,6 +81,7 @@ userSchema.methods.comparePassword = function (candidatePassword) {
 userSchema.set("toJSON", {
     transform: (doc, ret) => {
         delete ret.password;
+        delete ret.telegramLinkCode;
         return ret;
     },
 });

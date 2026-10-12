@@ -5,7 +5,9 @@ const alertSchema = new mongoose.Schema({
     latitude: Number,
     longitude: Number,
     distanceKm: Number,
-    smsSent: Boolean,
+    channel: { type: String, enum: ["sms", "telegram"] },
+    sent: Boolean,
+    smsSent: Boolean, // older alerts (before Telegram) only have this
     createdAt: { type: Date, default: Date.now },
 });
 mongoose.model("Alert", alertSchema);
